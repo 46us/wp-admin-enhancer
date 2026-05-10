@@ -1,6 +1,8 @@
 <?php
 namespace WpAdminEnhancer\Modules;
 
+use Elementor\Modules\GlobalClasses\Usage\Css_Class_Usage;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -12,32 +14,12 @@ class MoveAddNewButton implements ModuleInterface {
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue' ] );
     }
 
-    public function should_load(): bool {
-
-        if ( ! is_admin() ) {
-			return false;
-        }
-
-		global $pagenow;
-
-        // Only on post list screen
-        if ( $pagenow !== 'edit.php' ) {
-            return false;
-        }
-
-        // Only for Pages and Posts
-        $post_type = $_GET['post_type'] ?? 'post';
-
-        return in_array($post_type, ['page', 'post']);
+    public function should_load(string $hook = ''): bool {
+        return is_admin() && $hook === 'edit.php' && in_array($_GET['post_type'] ?? 'post', ['page', 'post']);
     }
 
     public function enqueue( $hook ): void {
-        if ( ! $this->should_load() ) {
-            return;
-        }
-
-        // Only load on post list screens
-        if ( $hook !== 'edit.php' ) {
+        if ( ! $this->should_load( $hook ) ) {
             return;
         }
 
@@ -70,7 +52,7 @@ class MoveAddNewButton implements ModuleInterface {
         if (!\$original.length) return;
 
         // Prevent duplicate injection
-        if ($('.cae-add-new-duplicate').length) return;
+        if ($('.wae-add-new-duplicate').length) return;
 
         const href = \$original.attr('href');
         const text = \$original.text();
@@ -79,7 +61,7 @@ class MoveAddNewButton implements ModuleInterface {
         const \$duplicate = $('<a></a>', {
             href: href,
             text: text,
-            class: 'button button-primary cae-add-new-duplicate',
+            class: 'button button-primary wae-add-new-duplicate',
             css: {
                 marginRight: '8px'
             }
@@ -102,11 +84,11 @@ class MoveAddNewButton implements ModuleInterface {
     }
 
     private function style(): string {
-		return '
-        .cae-add-new-duplicate {
+		return <<<CSS
+        .wae-add-new-duplicate {
             float: left;
             margin-right: 12px;
         }
-        ';
+        CSS;
     }
 }
